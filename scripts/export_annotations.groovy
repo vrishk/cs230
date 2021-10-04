@@ -13,13 +13,13 @@
 // empty file called 'annotations.csv' before running this script.
 def file_path = '/Users/vivekshankar/Documents/annotations.csv'
 
-def result = 'X,Y,Width,Height'
+def result = 'Name,X,Y,Width,Height'
 result += System.lineSeparator()
 for (annotation in getAnnotationObjects()) {
-    def pathClass = annotation.getPathClass()
+    def name = annotation.getName()
     def roi = annotation.getROI()
-    result += String.format('%.2f,%.2f,%.2f,%.2f',
-        roi.getBoundsX(), roi.getBoundsY(), roi.getBoundsWidth(), roi.getBoundsHeight())
+    result += String.format('%s,%.2f,%.2f,%.2f,%.2f',
+        name, roi.getBoundsX(), roi.getBoundsY(), roi.getBoundsWidth(), roi.getBoundsHeight())
     result += System.lineSeparator()
 }
 
