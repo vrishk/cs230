@@ -23,6 +23,7 @@ class TripletNetCore(nn.Module):
 
         # set the model
         model = models.resnet18(pretrained=False)
+        model.fc = torch.nn.Sequential()
         self.model = model
         self.fc = nn.Sequential(nn.Linear(512*2, 512),
                                  nn.ReLU(True), nn.Linear(512, 256))
