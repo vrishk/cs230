@@ -19,7 +19,7 @@ PATH_TO_PRETRAINED = '/deep/group/aihc-bootcamp-fall2021/lymphoma/models/Camelyo
 class TripletNetCore(nn.Module):
 
     def __init__(self):
-        super(TripletNet, self).__init__()
+        super(TripletNetCore, self).__init__()
 
         # set the model
         model = models.resnet18(pretrained=False)
