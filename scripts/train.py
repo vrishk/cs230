@@ -4,7 +4,6 @@ from torch.utils.data import DataLoader
 import pytorch_lightning as pl
 
 import argparse as ap
-import os
 
 # Imports from scripts
 
@@ -67,9 +66,14 @@ def main():
     parser = ap.ArgumentParser()
     parser = pl.Trainer.add_argparse_args(parser)
 
-    parser.add_argument("--batch_size", action="store_true", default=8, type=int)
-    parser.add_argument("--loader-num-workers", action="store_true", default=4, type=int)
-    parser.add_argument("--model-type", action="store_true", default="triplenet", type=str)
+    parser.add_argument("--batch_size", action="store_true", default=8)
+    parser.add_argument("--loader-num-workers", action="store_true", default=4)
+    parser.add_argument("--model-type", action="store_true", default="triplenet")
 
     args = parser.parse_args()
+
+    train(args)
+
+if __name__ == "__main__":
+    main()
 
