@@ -54,7 +54,8 @@ def train(args):
     trainer = pl.Trainer(
         gpus=[0], num_nodes=1, num_processes=8,
         precision=16, limit_train_batches=0.5,
-        max_epochs=10, log_every_n_steps=1
+        max_epochs=10, log_every_n_steps=1,
+        accelerator="ddp"
     )
     trainer.fit(model, dataloaders['train'], dataloaders['val'])
     
@@ -66,8 +67,8 @@ def main():
     parser = ap.ArgumentParser()
     parser = pl.Trainer.add_argparse_args(parser)
 
-    parser.add_argument("--batch_size", default=8, type=str)
-    parser.add_argument("--loader-num-workers", default=4, type=str)
+    parser.add_argument("--batch-size", default=1, type=int)
+    parser.add_argument("--num-workers", default=4, type=int)
     parser.add_argument("--model-type", default="triplenet", type=str)
 
     args = parser.parse_args()
