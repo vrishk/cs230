@@ -66,9 +66,9 @@ def main():
     parser = ap.ArgumentParser()
     parser = pl.Trainer.add_argparse_args(parser)
 
-    parser.add_argument("--batch_size", action="store_true", default=8)
-    parser.add_argument("--loader-num-workers", action="store_true", default=4)
-    parser.add_argument("--model-type", action="store_true", default="triplenet")
+    parser.add_argument("--batch_size", default=8, type=str)
+    parser.add_argument("--loader-num-workers", default=4, type=str)
+    parser.add_argument("--model-type", default="triplenet", type=str)
 
     args = parser.parse_args()
 
