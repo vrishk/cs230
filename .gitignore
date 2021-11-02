@@ -1,8 +1,9 @@
 # Pyright
 /**/pyrightconfig.json
 
-# Pytorch Lightning logs
+# Logs and models
 lightning_logs
+models
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
