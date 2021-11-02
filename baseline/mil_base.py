@@ -19,7 +19,7 @@ class MILBase(pl.LightningModule):
         
         self.criterion = nn.CrossEntropyLoss()
 
-        self.bare_metrics = {'acc': Accuracy(), ''ConfusionMatrix(9)}
+        self.bare_metrics = {'acc': Accuracy(), 'cm': ConfusionMatrix(9)}
 
         self.metrics = {
             i: {} 
