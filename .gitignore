@@ -3,7 +3,7 @@
 
 # Logs and models
 lightning_logs
-models
+ckpts
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
