@@ -10,12 +10,15 @@ import argparse as ap
 
 import os
 import sys
+from scripts.resnet.resnet_milbase import ResNetMB
+
+from scripts.resnet.resnet_vanilla import ResNetVN
 
 sys.path.insert(0, os.path.join(os.getcwd(), "../utils/"))
 
 from dataset import HDF5Dataset
 from tripletnet import TripletNet
-from resnet.resnet import ResNet
+from resnet import *
 from mil_loop import MILEpochLoop
 
 from typing import Any
@@ -36,10 +39,10 @@ def make_model(model_name: str):
     return {
         'triplenet': TripletNet(1e-3, 9, finetune=True),
         'triplenet_e2e': TripletNet(1e-3, 9, finetune=False),
-        'resnet18': ResNet(18, 1e-3, 9, finetune=True),
-        'resnet18_e2e': ResNet(18, 1e-3, 9, finetune=False),
-        'resnet50': ResNet(50, 1e-3, 9, finetune=True),
-        'resnet50_e2e': ResNet(50, 1e-3, 9, finetune=False)
+        'resnet18': ResNetVN(18, 1e-3, 9, finetune=True),
+        'resnet18_e2e': ResNetVN(18, 1e-3, 9, finetune=False),
+        'resnet50': ResNetMB(50, 1e-3, 9, finetune=True),
+        'resnet50_e2e': ResNetMB(50, 1e-3, 9, finetune=False)
     }[model_name]
  
 
