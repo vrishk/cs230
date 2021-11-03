@@ -1,7 +1,7 @@
 # Imports
 
 from torch.utils.data import DataLoader 
-import pytorch_lightning as pl
+import pytorch-lightning as pl
 
 import argparse as ap
 
@@ -13,7 +13,7 @@ import sys
 sys.path.insert(0, os.path.join(os.getcwd(), "../utils/"))
 
 from dataset import HDF5Dataset
-from triplenet import TripletNet
+from tripletnet import TripletNet
 from mil_loop import MILEpochLoop
 
 from typing import Any
