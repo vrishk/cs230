@@ -1,7 +1,8 @@
 # Imports
 
 from torch.utils.data import DataLoader 
-import pytorch-lightning as pl
+
+import pytorch_lightning as pl
 
 import argparse as ap
 
@@ -14,6 +15,7 @@ sys.path.insert(0, os.path.join(os.getcwd(), "../utils/"))
 
 from dataset import HDF5Dataset
 from tripletnet import TripletNet
+from resnet.resnet import ResNet
 from mil_loop import MILEpochLoop
 
 from typing import Any
@@ -33,7 +35,11 @@ PATH_TO_TEST = "/deep/group/aihc-bootcamp-fall2021/lymphoma/processed/data_split
 def make_model(model_name: str):
     return {
         'triplenet': TripletNet(1e-3, 9, finetune=True),
-        'triplenet_e2e': TripletNet(1e-3, 9, finetune=False)
+        'triplenet_e2e': TripletNet(1e-3, 9, finetune=False),
+        'resnet18': ResNet(18, 1e-3, 9, finetune=True),
+        'resnet18_e2e': ResNet(18, 1e-3, 9, finetune=False),
+        'resnet50': ResNet(50, 1e-3, 9, finetune=True),
+        'resnet50_e2e': ResNet(50, 1e-3, 9, finetune=False)
     }[model_name]
  
 
@@ -51,30 +57,30 @@ def make_dataloaders(num_workers: int, batch_size: int):
 
 
         
-def copy_loop(mil, orig):
-    mil.min_steps = orig.min_steps
-    mil.max_steps = orig.max_steps
+# def copy_loop(mil, orig):
+#     mil.min_steps = orig.min_steps
+#     mil.max_steps = orig.max_steps
 
-    mil.global_step = orig.global_step
-    mil.batch_progress = orig.batch_progress
-    mil.scheduler_progress = orig.scheduler_progress
+#     mil.global_step = orig.global_step
+#     mil.batch_progress = orig.batch_progress
+#     mil.scheduler_progress = orig.scheduler_progress
 
-    mil.batch_loop = orig.batch_loop
-    mil.val_loop = orig.val_loop
+#     mil.batch_loop = orig.batch_loop
+#     mil.val_loop = orig.val_loop
 
-    mil._results = orig._results
-    mil._warning_cache = orig._warning_cache
+#     mil._results = orig._results
+#     mil._warning_cache = orig._warning_cache
 
-    try: 
-        mil._outputs = orig._outputs
-        mil._dataloader_iter = orig._dataloader_iter
-        mil._dataloader_state_dict = orig._dataloader_state_dict
-    except:
-        mil._outputs = []
-        mil._dataloader_iter = None
-        mil._dataloader_state_dict = {}
+#     try: 
+#         mil._outputs = orig._outputs
+#         mil._dataloader_iter = orig._dataloader_iter
+#         mil._dataloader_state_dict = orig._dataloader_state_dict
+#     except:
+#         mil._outputs = []
+#         mil._dataloader_iter = None
+#         mil._dataloader_state_dict = {}
         
-    return mil
+#     return mil
 
 def train(args):
 
@@ -90,7 +96,7 @@ def train(args):
         accelerator="ddp"
     )
     # print(dir(trainer.fit_loop.epoch_loop._dataloader_iter))
-    trainer.fit_loop.connect(copy_loop(MILEpochLoop(0, 0), trainer.fit_loop.epoch_loop))
+    # trainer.fit_loop.connect(copy_loop(MILEpochLoop(0, 0), trainer.fit_loop.epoch_loop))
     trainer.fit(model, dataloaders['train'], dataloaders['val'])
     
     trainer.test(model, dataloaders['test'])
