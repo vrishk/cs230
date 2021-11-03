@@ -1,24 +1,33 @@
 import torch
 from torch import nn
+import pytorch_lightning as pl
+from torchvision import models
+from torchmetrics.classification.accuracy import Accuracy
+from torchmetrics import ConfusionMatrix
 
 from collections import OrderedDict
 
-from vanilla import VanillaNet
+import pandas as pd
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+from mil_base import MILBase
 from tripletnet_core import TripletNetCore
 
 # Path to pre-trained TripleNet model
 PATH_TO_PRETRAINED = '/deep/group/aihc-bootcamp-fall2021/lymphoma/models/Camelyon16_pretrained_model.pt'
 
 
-class TripletNetVN(VanillaNet):
+class TripletNetMB(MILBase):
     def __init__(
         self, 
         lr: float, 
         num_classes: int,
         finetune: bool = False
     ):
-        super().__init__(self, lr, num_classes, finetune)
-        
+        super().__init__(lr, num_classes, finetune)
+
         # Load pre-trained network:
         state_dict = torch.load(PATH_TO_PRETRAINED) ## TODO: change this to pytorch lightning
 
@@ -43,18 +52,21 @@ class TripletNetVN(VanillaNet):
         
         # set the linear classifier
         # use the classifier setup in the paper
-        self.classifier = nn.Linear(256*3, self.num_classes)
-        
-        # set the loss criterion -- CE
-        self.criterion = nn.CrossEntropyLoss()
+        self.classifier = nn.Linear(256*3, num_classes)
     
+
     def forward(self, x):
         # Forward step
         x = self.feature_extractor(x).flatten(1)   # representations
         x = self.classifier(x)                     # classifications
         return x
+    
+
+    def aggregate(self, y_hats):
+        return torch.max(y_hats, dim=0)[0].unsqueeze(0)
+        
 
 if __name__ == "__main__":
-    model = TripletNetVN(1e-5, 9, False)
+    model = TripletNetMB(1e-5, 9, False)
     print(model)
 
