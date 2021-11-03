@@ -2,12 +2,7 @@ import torch
 from torch import nn
 from torchvision import models
 
-from collections import OrderedDict
-
 from vanilla import VanillaNet
-
-# Path to pre-trained TripleNet model
-PATH_TO_PRETRAINED = '/deep/group/aihc-bootcamp-fall2021/lymphoma/models/Camelyon16_pretrained_model.pt'
 
 
 class ResNetVN(VanillaNet):
@@ -29,8 +24,6 @@ class ResNetVN(VanillaNet):
         else:
             raise NotImplementedError("the size is not supported")
 
-        
-        
         # if we finetune - only train the classifier, as opposed to e2e - freeze the network
         if self.finetune:
             for param in model.parameters():
@@ -41,10 +34,8 @@ class ResNetVN(VanillaNet):
         
         # set the linear classifier
         # use the classifier setup in the paper
-        self.classifier = nn.Linear(100, self.num_classes)
-        
-        # set the loss criterion -- CE
-        self.criterion = nn.CrossEntropyLoss()
+        self.classifier = nn.Linear(1000, self.num_classes)
+
     
     def forward(self, x):
         # Forward step
