@@ -1,21 +1,27 @@
+# Imports
 import torch
 from torch import nn
 from torchvision import models
 
-from vanilla import VanillaNet
+# Local imports
+import os
+import sys
+sys.path.insert(0, os.path.join(os.getcwd(), "../"))  # noqa
+
+from naive_base import NaiveBase  # noqa
 
 
-class ResNetVN(VanillaNet):
+class ResNetNaive(NaiveBase):
     def __init__(
         self, 
         size: int,
-        lr: float, 
-        num_classes: int,
-        finetune: bool = False
+        finetune: bool = False,
+        **kwargs
     ):
-        super().__init__(self, lr, num_classes, finetune)
+        super().__init__(**kwargs)
         
         self.size = size
+        self.finetune = finetune
 
         if self.size == 18:
             model = models.resnet18(pretrained=True)
@@ -34,7 +40,7 @@ class ResNetVN(VanillaNet):
         
         # set the linear classifier
         # use the classifier setup in the paper
-        self.classifier = nn.Linear(1000, self.num_classes)
+        self.classifier = nn.Linear(1000, self.hparams.num_classes)
 
     
     def forward(self, x):
@@ -44,6 +50,6 @@ class ResNetVN(VanillaNet):
         return x
 
 if __name__ == "__main__":
-    model = ResNetVN(18, 1e-5, 9, False)
+    model = ResNetNaive(size=18, lr=1e-5, num_classes=9, finetune=False)
     print(model)
 
