@@ -122,3 +122,21 @@ class NaiveBase(pl.LightningModule):
         fig_ = sns.heatmap(df_cm, annot=True, cmap='Spectral').get_figure()
         plt.close(fig_)        
         self.logger.experiment.add_figure("val_cm", fig_, self.current_epoch)
+    
+    def test_epoch_end(self, outputs):
+        
+        try:
+            if outputs[0].size() == []:
+                return
+        except:
+            return
+        
+        targets = torch.cat([tmp['targets'] for tmp in outputs])
+        preds = torch.cat([tmp['preds'] for tmp in outputs])
+        confusion_matrix = self.val_cm(preds, targets)
+
+        df_cm = pd.DataFrame(confusion_matrix.cpu().numpy(), index = range(9), columns=range(9))
+        plt.figure(figsize = (10,7))
+        fig_ = sns.heatmap(df_cm, annot=True, cmap='Spectral').get_figure()
+        plt.close(fig_)        
+        self.logger.experiment.add_figure("test_cm", fig_, self.current_epoch)

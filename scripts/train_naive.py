@@ -1,7 +1,7 @@
 # Imports
 
+import torch
 from torch.utils.data import DataLoader 
-
 import pytorch_lightning as pl
 
 import argparse as ap
@@ -14,28 +14,37 @@ import sys
 from dataset import NaiveDataset
 from resnet.resnet_naive import ResNetNaive
 
-from typing import Any
-
 # Lightning seed
 
 pl.seed_everything(42)
 
-
-# Paths
+# Constants
 
 PATH_TO_TRAIN = "/deep/group/aihc-bootcamp-fall2021/lymphoma/processed/data_splits/train.hdf5"
 PATH_TO_VAL = "/deep/group/aihc-bootcamp-fall2021/lymphoma/processed/data_splits/val.hdf5"
 PATH_TO_TEST = "/deep/group/aihc-bootcamp-fall2021/lymphoma/processed/data_splits/test.hdf5"
 
+CORE_PROP = [0.4719, 0.1770, 0.0148, 0.0771, 0.0948, 0.0277, 0.0807, 0.0508, 0.0051]
+
+# Helper Functions
+
+def get_weights():
+    weights = 1. / torch.tensor(CORE_PROP)
+    weights = weights / sum(weights)
+    return weights
 
 def make_model(model_name: str):
+    
+    weights = get_weights()
+    print("Weighted Crossentropy:", weights)
+    
     return {
         # 'triplenet': TripletNet(1e-3, 9, finetune=True),
         # 'triplenet_e2e': TripletNet(1e-3, 9, finetune=False),
-        'resnet18': ResNetNaive(size=18, lr=1e-3, num_classes=9, finetune=True),
-        'resnet18_e2e': ResNetNaive(size=18, lr=1e-3, num_classes=9, finetune=False),
-        'resnet50': ResNetNaive(size=50, lr=1e-3, num_classes=9, finetune=True),
-        'resnet50_e2e': ResNetNaive(size=18, lr=1e-3, num_classes=9, finetune=False),
+        'resnet18': ResNetNaive(size=18, lr=1e-3, num_classes=9, finetune=True, weights=weights),
+        'resnet18_e2e': ResNetNaive(size=18, lr=1e-3, num_classes=9, finetune=False, weights=weights),
+        'resnet50': ResNetNaive(size=50, lr=1e-3, num_classes=9, finetune=True, weights=weights),
+        'resnet50_e2e': ResNetNaive(size=18, lr=1e-3, num_classes=9, finetune=False, weights=weights),
     }[model_name]
  
 
