@@ -1,0 +1,4 @@
+batch_size: 1
+epochs: 1
+num_workers: 4
+model_type: 'resnet18'
