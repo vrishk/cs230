@@ -58,33 +58,6 @@ def make_dataloaders(num_workers: int, batch_size: int):
     
     return dataloaders
 
-
-        
-# def copy_loop(mil, orig):
-#     mil.min_steps = orig.min_steps
-#     mil.max_steps = orig.max_steps
-
-#     mil.global_step = orig.global_step
-#     mil.batch_progress = orig.batch_progress
-#     mil.scheduler_progress = orig.scheduler_progress
-
-#     mil.batch_loop = orig.batch_loop
-#     mil.val_loop = orig.val_loop
-
-#     mil._results = orig._results
-#     mil._warning_cache = orig._warning_cache
-
-#     try: 
-#         mil._outputs = orig._outputs
-#         mil._dataloader_iter = orig._dataloader_iter
-#         mil._dataloader_state_dict = orig._dataloader_state_dict
-#     except:
-#         mil._outputs = []
-#         mil._dataloader_iter = None
-#         mil._dataloader_state_dict = {}
-        
-#     return mil
-
 def train(args):
 
     model = make_model(args.model_type)
@@ -98,8 +71,6 @@ def train(args):
         max_epochs=args.epochs, log_every_n_steps=1,
         accelerator="ddp"
     )
-    # print(dir(trainer.fit_loop.epoch_loop._dataloader_iter))
-    # trainer.fit_loop.connect(copy_loop(MILEpochLoop(0, 0), trainer.fit_loop.epoch_loop))
     trainer.fit(model, dataloaders['train'], dataloaders['val'])
     
     trainer.test(model, dataloaders['test'])

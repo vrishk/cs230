@@ -3,21 +3,18 @@ from torch import nn
 
 from collections import OrderedDict
 
-from vanilla import VanillaNet
+from naive_base import NaiveBase
 from tripletnet_core import TripletNetCore
 
 # Path to pre-trained TripleNet model
 PATH_TO_PRETRAINED = '/deep/group/aihc-bootcamp-fall2021/lymphoma/models/Camelyon16_pretrained_model.pt'
 
 
-class TripletNetVN(VanillaNet):
-    def __init__(
-        self, 
-        lr: float, 
-        num_classes: int,
-        finetune: bool = False
-    ):
-        super().__init__(self, lr, num_classes, finetune)
+class TripletNetNaive(NaiveBase):
+    def __init__(self, finetune: bool = False, *args, **kwargs):
+        super().__init__(self)
+        
+        self.finetune = finetune
         
         # Load pre-trained network:
         state_dict = torch.load(PATH_TO_PRETRAINED) ## TODO: change this to pytorch lightning
@@ -36,7 +33,7 @@ class TripletNetVN(VanillaNet):
         if self.finetune:
             for name, param in enumerate(model.named_parameters()):
                 param = param[1]
-                param.requires_grad=False
+                param.requires_grad = False
         
         # set the pretrained weights as the network
         self.feature_extractor = model
@@ -55,6 +52,6 @@ class TripletNetVN(VanillaNet):
         return x
 
 if __name__ == "__main__":
-    model = TripletNetVN(1e-5, 9, False)
+    model = TripletNetNaive(1e-5, 9, False)
     print(model)
 
