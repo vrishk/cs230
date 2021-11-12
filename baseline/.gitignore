@@ -1,0 +1,4 @@
+# Testing model files
+*.dat
+model_ckpts
+
