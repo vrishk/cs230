@@ -80,11 +80,12 @@ class NaiveDataset(Dataset):
         patch: np.ndarray = self.h5data[core_id][()][idx]
         if self.is_features:
             label = self.h5data[core_id].attrs["y"]    
+            patch = torch.tensor(patch)
         else:
             label = self.h5data[core_id].attrs["label"]
             if self.transform:
                 patch = self.transform(patch)
 
 
-        return torch.tensor(patch), torch.tensor(int(label))
+        return patch, torch.tensor(int(label))
 

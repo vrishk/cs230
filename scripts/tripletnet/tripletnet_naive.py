@@ -6,13 +6,18 @@ from collections import OrderedDict
 from naive_base import NaiveBase
 from tripletnet_core import TripletNetCore
 
+# Adding to path
+
+import sys, os # noqa
+sys.path.append(os.getcwd()) # noqa
+
 # Path to pre-trained TripleNet model
 PATH_TO_PRETRAINED = '/deep/group/aihc-bootcamp-fall2021/lymphoma/models/Camelyon16_pretrained_model.pt'
 
 
 class TripletNetNaive(NaiveBase):
     def __init__(self, finetune: bool = False, *args, **kwargs):
-        super().__init__(self)
+        super().__init__(**kwargs)
         
         self.finetune = finetune
         
@@ -40,7 +45,7 @@ class TripletNetNaive(NaiveBase):
         
         # set the linear classifier
         # use the classifier setup in the paper
-        self.classifier = nn.Linear(256*3, self.num_classes)
+        self.classifier = nn.Linear(256*3, self.hparams.num_classes)
         
         # set the loss criterion -- CE
         self.criterion = nn.CrossEntropyLoss()
