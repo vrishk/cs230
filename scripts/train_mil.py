@@ -3,7 +3,7 @@ from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning.core.mixins import device_dtype_mixin
 
 import torch
-from torch.utils.data import DataLoader 
+from torch.utils.data import DataLoader
 import pytorch_lightning as pl
 
 import argparse as ap
@@ -40,37 +40,40 @@ def get_weights():
     return weights
 
 def make_model(model_name: str, use_stored_features: bool):
-    
+
     weights = get_weights()
     print("Weighted Crossentropy:", weights)
-    
+
     return {
         'tripletnet': \
             LinearMIL(256 * 3, lr=1e-3, num_classes=9, weights=weights) if use_stored_features
             else TripletNetMIL(finetune=False ,lr=1e-3, num_classes=9, weights=weights),
+        'tripletnet_nonDLBCL': \
+            LinearMIL(256 * 3, lr=1e-3, num_classes=8, weights=weights) if use_stored_features
+            else TripletNetMIL(finetune=False, lr=1e-3, num_classes=8, weights=weights),
         'tripletnet_e2e': TripletNetMIL(finetune=True, lr=1e-3, num_classes=9, weights=weights),
         'resnet18': ResNetMIL(size=18, lr=1e-3, num_classes=9, finetune=True, weights=weights),
         'resnet18_e2e': ResNetMIL(size=18, lr=1e-3, num_classes=9, finetune=False, weights=weights),
         'resnet50': ResNetMIL(size=50, lr=1e-3, num_classes=9, finetune=True, weights=weights),
         'resnet50_e2e': ResNetMIL(size=18, lr=1e-3, num_classes=9, finetune=False, weights=weights),
     }[model_name]
- 
+
 
 def make_dataloaders(num_workers: int, batch_size: int, use_stored_features: bool = False, model: str = None):
 
     # If finetuning
     if use_stored_features:
         paths = {'train': MODEL(model, 'train'), 'val': MODEL(model, 'val'), 'test': MODEL(model, 'test')}
-        datasets = {i: MILDataset(hdf5_path=paths[i], is_features=True) for i in paths}        
+        datasets = {i: MILDataset(hdf5_path=paths[i], is_features=True) for i in paths}
     else:
         paths = {'train': RAW('train'), 'val': RAW('val'), 'test': RAW('test')}
         datasets = {i: MILDataset(hdf5_path=paths[i], is_features=False) for i in paths}
-        
+
     dataloaders = {
-        i: DataLoader(datasets[i], batch_size=batch_size, num_workers=num_workers, shuffle=True) 
+        i: DataLoader(datasets[i], batch_size=batch_size, num_workers=num_workers, shuffle=True)
         for i in datasets
     }
-    
+
     return dataloaders
 
 def train(cfg):
@@ -78,8 +81,8 @@ def train(cfg):
     model = make_model(cfg.model_type, cfg.stored_features)
 
     dataloaders = make_dataloaders(
-        num_workers=cfg.num_workers, 
-        batch_size=cfg.batch_size, 
+        num_workers=cfg.num_workers,
+        batch_size=cfg.batch_size,
         use_stored_features=cfg.stored_features,
         model=cfg.model_type
     )
@@ -92,7 +95,7 @@ def train(cfg):
         accelerator="ddp"
     )
     trainer.fit(model, dataloaders['train'], dataloaders['val'])
-    
+
     trainer.test(model, dataloaders['test'])
 
     trainer.save_checkpoint(f"../../models/{cfg.ckpt_name}.ckpt")
