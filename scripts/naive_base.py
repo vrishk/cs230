@@ -17,6 +17,7 @@ class NaiveBase(pl.LightningModule):
     def __init__(self, lr: float = 1e-4, num_classes: int = 8, weights: torch.Tensor = None):
         super().__init__()
 
+        self.num_classes = num_classes
         # Ensure variables are accessible via `hparams` attribute
         self.save_hyperparameters()
 
@@ -99,7 +100,7 @@ class NaiveBase(pl.LightningModule):
         preds = torch.cat([tmp['preds'] for tmp in outputs])
         confusion_matrix = self.train_cm(preds, targets)
 
-        df_cm = pd.DataFrame(confusion_matrix.cpu().numpy(), index = range(9), columns=range(9))
+        df_cm = pd.DataFrame(confusion_matrix.cpu().numpy(), index = range(self.num_classes), columns=range(self.num_classes))
         plt.figure(figsize = (10,7))
         fig_ = sns.heatmap(df_cm, annot=True, cmap='Spectral').get_figure()
         plt.close(fig_)
@@ -118,7 +119,7 @@ class NaiveBase(pl.LightningModule):
         preds = torch.cat([tmp['preds'] for tmp in outputs])
         confusion_matrix = self.val_cm(preds, targets)
 
-        df_cm = pd.DataFrame(confusion_matrix.cpu().numpy(), index = range(9), columns=range(9))
+        df_cm = pd.DataFrame(confusion_matrix.cpu().numpy(), index = range(self.num_classes), columns=range(self.num_classes))
         plt.figure(figsize = (10,7))
         fig_ = sns.heatmap(df_cm, annot=True, cmap='Spectral').get_figure()
         plt.close(fig_)
@@ -136,7 +137,7 @@ class NaiveBase(pl.LightningModule):
         preds = torch.cat([tmp['preds'] for tmp in outputs])
         confusion_matrix = self.val_cm(preds, targets)
 
-        df_cm = pd.DataFrame(confusion_matrix.cpu().numpy(), index = range(9), columns=range(9))
+        df_cm = pd.DataFrame(confusion_matrix.cpu().numpy(), index = range(self.num_classes), columns=range(self.num_classes))
         plt.figure(figsize = (10,7))
         fig_ = sns.heatmap(df_cm, annot=True, cmap='Spectral').get_figure()
         plt.close(fig_)
