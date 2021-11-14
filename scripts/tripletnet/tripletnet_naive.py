@@ -1,14 +1,19 @@
+# Imports
 import torch
 from torch import nn
 
 from collections import OrderedDict
 
+# Local imports
+import os
+import sys
+sys.path.insert(0, os.path.join(os.getcwd(), "../"))  # noqa
+
 from naive_base import NaiveBase
 from tripletnet_core import TripletNetCore
 
-# Adding to path
+# For `tripletnet_core.py` to be visible for higher dirs
 
-import sys, os # noqa
 sys.path.append(os.getcwd()) # noqa
 
 # Path to pre-trained TripleNet model

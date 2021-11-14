@@ -31,7 +31,7 @@ class NaiveBase(pl.LightningModule):
         self.val_acc = acc.clone()
         self.test_acc = acc.clone()
 
-        # Add confusion matrix into trianing metrics
+        # Add confusion matrix into training metrics
         cm = ConfusionMatrix(self.hparams.num_classes)
         self.train_cm = cm.clone()
         self.val_cm = cm.clone()
