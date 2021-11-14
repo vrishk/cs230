@@ -1,30 +1,27 @@
+# Imports
 import torch
 from torch import nn
-import pytorch_lightning as pl
 from torchvision import models
-from torchmetrics.classification.accuracy import Accuracy
-from torchmetrics import ConfusionMatrix
 
-from collections import OrderedDict
+# Local imports
+import os
+import sys
+sys.path.insert(0, os.path.join(os.getcwd(), "../"))  # noqa
 
-import seaborn as sns
+from mil_base import MILBase  # noqa
 
-from mil_base import MILBase
-
-
-class ResNetMB(MILBase):
+class ResNetMIL(MILBase):
     def __init__(
         self, 
         size: int,
-        lr: float, 
-        num_classes: int,
-        finetune: bool = False
+        finetune: bool = False,
+        **kwargs
     ):
-        super().__init__(lr, num_classes, finetune)
-
+        super().__init__(**kwargs)
+        
         self.size = size
+        self.finetune = finetune
 
-        # Load pre-trained network:
         if self.size == 18:
             model = models.resnet18(pretrained=True)
         elif self.size == 50:
@@ -42,9 +39,7 @@ class ResNetMB(MILBase):
         
         # set the linear classifier
         # use the classifier setup in the paper
-        self.classifier = nn.Linear(1000, self.num_classes)
-
-    
+        self.classifier = nn.Linear(1000, self.hparams.num_classes)
 
     def forward(self, x):
         # Forward step
@@ -58,6 +53,6 @@ class ResNetMB(MILBase):
         
 
 if __name__ == "__main__":
-    model = ResNetMB(18, 1e-5, 9, False)
+    model = ResNetMIL(size=18, lr=1e-5, num_classes=9, finetune=False)
     print(model)
 

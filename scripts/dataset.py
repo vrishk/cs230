@@ -20,6 +20,7 @@ class MILDataset(Dataset):
         self.h5data = h5py.File(self.hdf5_path, "r")
         self.cores = list(self.h5data.keys())
 
+        self.is_features = is_features
         self.bag_size = bag_size
         self.transform = transform
 

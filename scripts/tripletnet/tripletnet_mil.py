@@ -1,32 +1,30 @@
+# Imports
 import torch
 from torch import nn
-import pytorch_lightning as pl
-from torchvision import models
-from torchmetrics.classification.accuracy import Accuracy
-from torchmetrics import ConfusionMatrix
 
 from collections import OrderedDict
 
-import pandas as pd
+# Local imports
+import os
+import sys
+sys.path.insert(0, os.path.join(os.getcwd(), "../"))  # noqa
 
-import matplotlib.pyplot as plt
-import seaborn as sns
+from mil_base import MILBase  # noqa
+from tripletnet_core import TripletNetCore # noqa
 
-from mil_base import MILBase
-from tripletnet_core import TripletNetCore
+# For `tripletnet_core.py` to be visible for higher dirs
+
+sys.path.append(os.getcwd()) # noqa
 
 # Path to pre-trained TripleNet model
 PATH_TO_PRETRAINED = '/deep/group/aihc-bootcamp-fall2021/lymphoma/models/Camelyon16_pretrained_model.pt'
 
 
-class TripletNetMB(MILBase):
-    def __init__(
-        self, 
-        lr: float, 
-        num_classes: int,
-        finetune: bool = False
-    ):
-        super().__init__(lr, num_classes, finetune)
+class TripletNetMIL(MILBase):
+    def __init__(self, finetune: bool = False, *args, **kwargs):
+        super().__init__(**kwargs)
+                
+        self.finetune = finetune
 
         # Load pre-trained network:
         state_dict = torch.load(PATH_TO_PRETRAINED) ## TODO: change this to pytorch lightning
@@ -52,7 +50,7 @@ class TripletNetMB(MILBase):
         
         # set the linear classifier
         # use the classifier setup in the paper
-        self.classifier = nn.Linear(256*3, num_classes)
+        self.classifier = nn.Linear(256*3, self.hparams.num_classes)
     
 
     def forward(self, x):
@@ -60,13 +58,12 @@ class TripletNetMB(MILBase):
         x = self.feature_extractor(x).flatten(1)   # representations
         x = self.classifier(x)                     # classifications
         return x
-    
 
     def aggregate(self, y_hats):
         return torch.max(y_hats, dim=0)[0].unsqueeze(0)
         
 
 if __name__ == "__main__":
-    model = TripletNetMB(1e-5, 9, False)
+    model = TripletNetMIL(finetune=False, lr=1e-5, num_classes=9)
     print(model)
 

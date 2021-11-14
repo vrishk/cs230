@@ -1,4 +1,6 @@
 batch_size: 1
 epochs: 1
 num_workers: 1
-model_type: 'tripletnet'
+model_type: 'resnet18'
+ckpt_name: 'tripletnet_linear'
+stored_features: False

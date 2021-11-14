@@ -1,7 +1,9 @@
-# Imports
+import hydra
+from omegaconf import DictConfig, OmegaConf
+from pytorch_lightning.core.mixins import device_dtype_mixin
 
+import torch
 from torch.utils.data import DataLoader 
-
 import pytorch_lightning as pl
 
 import argparse as ap
@@ -10,86 +12,94 @@ import argparse as ap
 
 import os
 import sys
-from scripts.resnet.resnet_milbase import ResNetMB
 
-from scripts.resnet.resnet_vanilla import ResNetVN
+sys.path.append(os.path.join(os.getcwd(), "./tripletnet"))
+sys.path.append(os.path.join(os.getcwd(), "./resnet"))
 
-sys.path.insert(0, os.path.join(os.getcwd(), "../utils/"))
-
-from dataset import HDF5Dataset
-from tripletnet import TripletNet
-from resnet import *
-from mil_loop import MILEpochLoop
-
-from typing import Any
+from dataset import MILDataset
+from linear import LinearMIL
+from resnet.resnet_mil import ResNetMIL
+from tripletnet.tripletnet_mil import TripletNetMIL
 
 # Lightning seed
 
 pl.seed_everything(42)
 
+# Constants
 
-# Paths
+RAW = lambda group: f"/deep/group/aihc-bootcamp-fall2021/lymphoma/processed/data_splits/{group}.hdf5"
+MODEL = lambda model, group: f"/deep/group/aihc-bootcamp-fall2021/lymphoma/processed/data_splits/custom_splits/{model}_features/{model}_{group}_features.hdf5"
 
-PATH_TO_TRAIN = "/deep/group/aihc-bootcamp-fall2021/lymphoma/processed/data_splits/train.hdf5"
-PATH_TO_VAL = "/deep/group/aihc-bootcamp-fall2021/lymphoma/processed/data_splits/val.hdf5"
-PATH_TO_TEST = "/deep/group/aihc-bootcamp-fall2021/lymphoma/processed/data_splits/test.hdf5"
+CORE_PROPORTIONS = [0.4719, 0.1770, 0.0148, 0.0771, 0.0948, 0.0277, 0.0807, 0.0508, 0.0051]
 
+# Helper Functions
 
-def make_model(model_name: str):
+def get_weights():
+    weights = 1. / torch.tensor(CORE_PROPORTIONS)
+    weights = weights / sum(weights)
+    return weights
+
+def make_model(model_name: str, use_stored_features: bool):
+    
+    weights = get_weights()
+    print("Weighted Crossentropy:", weights)
+    
     return {
-        'triplenet': TripletNet(1e-3, 9, finetune=True),
-        'triplenet_e2e': TripletNet(1e-3, 9, finetune=False),
-        'resnet18': ResNetVN(18, 1e-3, 9, finetune=True),
-        'resnet18_e2e': ResNetVN(18, 1e-3, 9, finetune=False),
-        'resnet50': ResNetMB(50, 1e-3, 9, finetune=True),
-        'resnet50_e2e': ResNetMB(50, 1e-3, 9, finetune=False)
+        'tripletnet': \
+            LinearMIL(256 * 3, lr=1e-3, num_classes=9, weights=weights) if use_stored_features
+            else TripletNetMIL(finetune=False ,lr=1e-3, num_classes=9, weights=weights),
+        'tripletnet_e2e': TripletNetMIL(finetune=True, lr=1e-3, num_classes=9, weights=weights),
+        'resnet18': ResNetMIL(size=18, lr=1e-3, num_classes=9, finetune=True, weights=weights),
+        'resnet18_e2e': ResNetMIL(size=18, lr=1e-3, num_classes=9, finetune=False, weights=weights),
+        'resnet50': ResNetMIL(size=50, lr=1e-3, num_classes=9, finetune=True, weights=weights),
+        'resnet50_e2e': ResNetMIL(size=18, lr=1e-3, num_classes=9, finetune=False, weights=weights),
     }[model_name]
  
 
-def make_dataloaders(num_workers: int, batch_size: int):
-    # Datasets
+def make_dataloaders(num_workers: int, batch_size: int, use_stored_features: bool = False, model: str = None):
 
-    paths = {'train': PATH_TO_TRAIN, 'val': PATH_TO_VAL, 'test': PATH_TO_TEST}
-    datasets = {i: HDF5Dataset(paths[i]) for i in paths}
+    # If finetuning
+    if use_stored_features:
+        paths = {'train': MODEL(model, 'train'), 'val': MODEL(model, 'val'), 'test': MODEL(model, 'test')}
+        datasets = {i: MILDataset(hdf5_path=paths[i], is_features=True) for i in paths}        
+    else:
+        paths = {'train': RAW('train'), 'val': RAW('val'), 'test': RAW('test')}
+        datasets = {i: MILDataset(hdf5_path=paths[i], is_features=False) for i in paths}
+        
     dataloaders = {
-        i: DataLoader(datasets[i], batch_size=batch_size, num_workers=num_workers) 
+        i: DataLoader(datasets[i], batch_size=batch_size, num_workers=num_workers, shuffle=True) 
         for i in datasets
     }
     
     return dataloaders
 
-def train(args):
+def train(cfg):
 
-    model = make_model(args.model_type)
+    model = make_model(cfg.model_type, cfg.stored_features)
 
-    dataloaders = make_dataloaders(args.num_workers, args.batch_size)
+    dataloaders = make_dataloaders(
+        num_workers=cfg.num_workers, 
+        batch_size=cfg.batch_size, 
+        use_stored_features=cfg.stored_features,
+        model=cfg.model_type
+    )
 
     # training
     trainer = pl.Trainer(
-        gpus=[0], num_nodes=1, num_processes=8,
+        gpus=[0], num_nodes=1,
         precision=16, limit_train_batches=0.5,
-        max_epochs=args.epochs, log_every_n_steps=1,
+        max_epochs=cfg.epochs, log_every_n_steps=1,
         accelerator="ddp"
     )
     trainer.fit(model, dataloaders['train'], dataloaders['val'])
     
     trainer.test(model, dataloaders['test'])
 
-    trainer.save_checkpoint("../../models/test.ckpt")
+    trainer.save_checkpoint(f"../../models/{cfg.ckpt_name}.ckpt")
 
-def main():
-    parser = ap.ArgumentParser()
-    parser = pl.Trainer.add_argparse_args(parser)
-
-    parser.add_argument("--batch-size", default=1, type=int)
-    parser.add_argument("--epochs", default=1, type=int)
-    parser.add_argument("--num-workers", default=4, type=int)
-    parser.add_argument("--model-type", default="triplenet", type=str)
-
-    args = parser.parse_args()
-
-    train(args)
+@hydra.main(config_path="configs", config_name="config")
+def main(cfg: DictConfig) -> None:
+    train(cfg)
 
 if __name__ == "__main__":
     main()
-

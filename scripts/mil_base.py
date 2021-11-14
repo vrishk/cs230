@@ -17,16 +17,23 @@ import seaborn as sns
 class MILBase(pl.LightningModule):
     def __init__(self, lr: float = 1e-4, num_classes: int = 9, weights: torch.Tensor = None):
         super().__init__()
+        
+        # Ensure variables are accessible via `hparams` attribute
         self.save_hyperparameters()
         
-        self.criterion = nn.CrossEntropyLoss(weights=weights)
+        # Weighted crossentropy for dataset skew
+        self.criterion = nn.CrossEntropyLoss(weight=weights)
 
+        # Classification metrics
+        
+        # use separate metric instance for train, val and test step
+        # to ensure a proper reduction over the epoch
         acc = Accuracy()
         self.train_acc = acc.clone()
         self.val_acc = acc.clone()
         self.test_acc = acc.clone()
 
-        # Add confusion matrix into trianing metrics
+        # Add confusion matrix into training metrics
         cm = ConfusionMatrix(self.hparams.num_classes)
         self.train_cm = cm.clone()
         self.val_cm = cm.clone()
@@ -59,7 +66,7 @@ class MILBase(pl.LightningModule):
         bag, y = batch
         y_hat = self.bag_forward(bag)
         loss = self.criterion(y_hat, y)
-        acc = self.metrics['acc']['train'](y_hat, y)
+        acc = self.train_acc(y_hat, y)
     
         # log train metrics
         self.log("train/loss", loss, on_step=False, on_epoch=True, prog_bar=True, sync_dist=True)
@@ -71,7 +78,7 @@ class MILBase(pl.LightningModule):
         bag, y = batch
         y_hat = self.bag_forward(bag)
         loss = self.criterion(y_hat, y)
-        acc = self.metrics['acc']['val'](y_hat, y)
+        acc = self.val_acc(y_hat, y)
         
         # log validation metrics
         self.log("val/loss", loss, on_step=False, on_epoch=True, prog_bar=True, sync_dist=True)
@@ -83,7 +90,7 @@ class MILBase(pl.LightningModule):
         bag, y = batch
         y_hat = self.bag_forward(bag)
         loss = self.criterion(y_hat, y)
-        acc = self.metrics['acc']['test'](y_hat, y)
+        acc = self.test_acc(y_hat, y)
         
         # log test metrics
         self.log("test/loss", loss, on_step=False, on_epoch=True, prog_bar=True, sync_dist=True)
