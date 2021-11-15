@@ -1,3 +1,4 @@
+import itertools.cycle
 import torch
 from torch.utils.data import Dataset
 from torchvision import transforms
@@ -34,6 +35,7 @@ class MILDataset(Dataset):
 
         if len(patches) < self.bag_size:
             patches = [im for im in patches]
+            patches = [next(patches) for i in range(self.bag_size)]
         else:
             patches = random.sample([im for im in patches], self.bag_size)
 
