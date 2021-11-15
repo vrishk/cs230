@@ -1,4 +1,4 @@
-import itertools.cycle
+from itertools import cycle
 import torch
 from torch.utils.data import Dataset
 from torchvision import transforms
@@ -34,8 +34,9 @@ class MILDataset(Dataset):
         patches: np.ndarray = self.h5data[patient_id][()]
 
         if len(patches) < self.bag_size:
-            patches = [im for im in patches]
-            patches = [next(patches) for i in range(self.bag_size)]
+           # patches = cycle([im for im in patches])
+           # patches = [next(patches) for i in range(self.bag_size)]
+           patches = [im for im in patches] 
         else:
             patches = random.sample([im for im in patches], self.bag_size)
 
@@ -46,10 +47,9 @@ class MILDataset(Dataset):
             if self.transform:
                 patches = [self.transform(im) for im in patches]
 
-        patches = torch.tensor(patches)
-        labels = torch.tensor(len(patches)*[int(label)])
-        print(patches.shape, labels.shape)
-
+       # patches = torch.tensor(patches)
+       # labels = torch.nn.functional.one_hot(torch.arange(0, 8))[int(label),:]
+        labels = torch.tensor(int(label))
         return patches, labels
 
 
