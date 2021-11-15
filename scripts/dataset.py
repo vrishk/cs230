@@ -36,9 +36,6 @@ class MILDataset(Dataset):
             patches = [im for im in patches]
         else:
             patches = random.sample([im for im in patches], self.bag_size)
-            # TODO: to delete
-            for item in patches:
-                print(item.shape)
 
         if self.is_features:
             label = self.h5data[patient_id].attrs["y"]
@@ -47,7 +44,10 @@ class MILDataset(Dataset):
             if self.transform:
                 patches = [self.transform(im) for im in patches]
 
-        return patches, torch.ones(len(patches))*int(label)
+        labels = torch.ones(len(patches))*int(label)
+
+        print(patches.shape, labels.shape)
+        return patches, labels
 
 
 class NaiveDataset(Dataset):
