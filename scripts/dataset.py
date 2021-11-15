@@ -47,7 +47,7 @@ class MILDataset(Dataset):
             if self.transform:
                 patches = [self.transform(im) for im in patches]
 
-        return patches, torch.tensor(int(label))
+        return patches, torch.ones(len(patches))*int(label)
 
 
 class NaiveDataset(Dataset):
