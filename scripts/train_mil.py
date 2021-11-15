@@ -30,7 +30,8 @@ pl.seed_everything(42)
 RAW = lambda group: f"/deep/group/aihc-bootcamp-fall2021/lymphoma/processed/data_splits/{group}.hdf5"
 MODEL = lambda model, group: f"/deep/group/aihc-bootcamp-fall2021/lymphoma/processed/data_splits/custom_splits/{model}_features/{model}_{group}_features.hdf5"
 
-CORE_PROPORTIONS = [0.4719, 0.1770, 0.0148, 0.0771, 0.0948, 0.0277, 0.0807, 0.0508, 0.0051]
+# CORE_PROPORTIONS = [0.4719, 0.1770, 0.0148, 0.0771, 0.0948, 0.0277, 0.0807, 0.0508, 0.0051]
+CORE_PROPORTIONS = [0.1770, 0.0148, 0.0771, 0.0948, 0.0277, 0.0807, 0.0508, 0.0051]
 
 # Helper Functions
 
