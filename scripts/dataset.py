@@ -44,9 +44,10 @@ class MILDataset(Dataset):
             if self.transform:
                 patches = [self.transform(im) for im in patches]
 
-        labels = torch.ones(len(patches))*int(label)
-
+        patches = torch.tensor(patches)
+        labels = torch.tensor(len(patches)*[int(label)])
         print(patches.shape, labels.shape)
+
         return patches, labels
 
 
