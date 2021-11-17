@@ -44,7 +44,7 @@ def get_weights():
     return weights
 
 def make_model(model_name: str, use_stored_features: bool,
-               lr: float, num_classes: int, finetune: bool, norm: str):
+        lr: float, num_classes: int, finetune: bool):
 
     weights = get_weights()
     print("Weighted Crossentropy:", weights)
