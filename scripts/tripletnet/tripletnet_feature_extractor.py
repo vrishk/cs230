@@ -1,6 +1,10 @@
 # Imports
 import torch
+import torch.nn as nn
 import numpy as np
+
+from dataset import NaiveDataset
+from torch.utils.data import DataLoader
 
 from collections import OrderedDict
 
@@ -20,7 +24,7 @@ sys.path.append(os.getcwd()) # noqa
 PATH_TO_PRETRAINED = '/deep/group/aihc-bootcamp-fall2021/lymphoma/models/Camelyon16_pretrained_model.pt'
 
 
-class TripletNetFeatureExtractor(NaiveBase):
+class TripletNetFeatureExtractor(nn.Module):
     def __init__(self):
         super().__init__()
 
@@ -82,4 +86,8 @@ if __name__ == "__main__":
     data_path = ''
 
     # open the hdf5 file
-
+    hdf5_path = '/deep/group/aihc-bootcamp-fall2021/lymphoma/processed/data_splits/test.hdf5'
+    dat = NaiveDataset(hdf5_path=hdf5_path)
+    loader = DataLoader(dat)
+    model = TripletNetFeatureExtractor()
+    out = model(loader)
