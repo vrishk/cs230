@@ -1,5 +1,6 @@
 # Imports
 import torch
+import numpy as np
 
 from collections import OrderedDict
 
@@ -46,8 +47,32 @@ class TripletNetFeatureExtractor(NaiveBase):
         self.feature_extractor = model
 
     def forward(self, x):
+        # shape (batch_size, 3, height, width)
+        # mine (batch_size, height, width, 3)
+        image = x.numpy()
+        print("Shape before normalization:", x.shape)
+
+        # shape (3,)
+        batch_mean = np.mean(image, axis=(0, 1, 2))
+        batch_std0 = np.std(image, axis=(0, 1, 2))
+        batch_std1 = np.std(image, axis=(0, 1, 2), ddof=1)
+
+        # normalize within the batch
+        image[:, :, :, 0] = image[:, :, :, 0] - batch_mean[0]
+        image[:, :, :, 1] = image[:, :, :, 1] - batch_mean[1]
+        image[:, :, :, 2] = image[:, :, :, 2] - batch_mean[2]
+
+        image[:, :, :, 0] = image[:, :, :, 0] / batch_std0[0]
+        image[:, :, :, 1] = image[:, :, :, 1] / batch_std0[1]
+        image[:, :, :, 2] = image[:, :, :, 2] / batch_std0[2]
+
+        x = torch.toTensor(image)
+        print("Shape after normalization:", x.shape)
+
+
         # Forward step
         x = self.feature_extractor(x)   # representations
+        print("Output shape:", x.shape)
         return x
 
 
@@ -57,5 +82,4 @@ if __name__ == "__main__":
     data_path = ''
 
     # open the hdf5 file
-
 
