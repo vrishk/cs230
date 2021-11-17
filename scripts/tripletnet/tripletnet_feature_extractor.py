@@ -88,6 +88,6 @@ if __name__ == "__main__":
     # open the hdf5 file
     hdf5_path = '/deep/group/aihc-bootcamp-fall2021/lymphoma/processed/data_splits/test.hdf5'
     dat = NaiveDataset(hdf5_path=hdf5_path)
-    loader = DataLoader(dat)
-    model = TripletNetFeatureExtractor()
-    out = model(loader)
+    loader = DataLoader(dat, batch_size=10)
+    for batch in loader:
+        print(batch)
