@@ -36,7 +36,7 @@ class MILDataset(Dataset):
         if len(patches) < self.bag_size:
            # patches = cycle([im for im in patches])
            # patches = [next(patches) for i in range(self.bag_size)]
-           patches = [im for im in patches] 
+           patches = [im for im in patches]
         else:
             patches = random.sample([im for im in patches], self.bag_size)
 
@@ -95,4 +95,3 @@ class NaiveDataset(Dataset):
 
 
         return patch, torch.tensor(int(label))
-

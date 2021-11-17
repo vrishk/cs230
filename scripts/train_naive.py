@@ -1,10 +1,13 @@
 import hydra
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning.core.mixins import device_dtype_mixin
+import torchvision.transforms as transforms
 
 import torch
 from torch.utils.data import DataLoader
 import pytorch_lightning as pl
+
+import numpy as np
 
 import argparse as ap
 
@@ -74,10 +77,42 @@ def make_dataloaders(num_workers: int, batch_size: int, use_stored_features: boo
         paths = {'train': RAW('train'), 'val': RAW('val'), 'test': RAW('test')}
         datasets = {i: NaiveDataset(hdf5_path=paths[i], is_features=False) for i in paths}
 
-    dataloaders = {
-        i: DataLoader(datasets[i], batch_size=batch_size, num_workers=num_workers, shuffle=True)
-        for i in datasets
-    }
+    dataloaders = {}
+    for j in datasets:
+        dataloader = DataLoader(datasets[j], batch_size=batch_size, num_workers=num_workers, shuffle=True)
+        dataloaders[j] = dataloader
+
+        pop_mean = []
+        pop_std0 = []
+        pop_std1 = []
+        for i, data in enumerate(dataloader, 0):
+            # shape (batch_size, 3, height, width)
+            # mine (batch_size, height, width, 3)
+            print(data)
+            image, label = data
+            numpy_image = image.numpy()
+
+            # shape (3,)
+            batch_mean = np.mean(numpy_image, axis=(0, 1, 2))
+            batch_std0 = np.std(numpy_image, axis=(0, 1, 2))
+            batch_std1 = np.std(numpy_image, axis=(0, 1, 2), ddof=1)
+
+            pop_mean.append(batch_mean)
+            pop_std0.append(batch_std0)
+            pop_std1.append(batch_std1)
+
+        # shape (num_iterations, 3) -> (mean across 0th axis) -> shape (3,)
+        pop_mean = np.array(pop_mean).mean(axis=0)
+        pop_std0 = np.array(pop_std0).mean(axis=0)
+        pop_std1 = np.array(pop_std1).mean(axis=0)
+
+
+
+
+    # dataloaders = {
+    #     i: DataLoader(datasets[i], batch_size=batch_size, num_workers=num_workers, shuffle=True)
+    #     for i in datasets
+    # }
 
     return dataloaders
 
