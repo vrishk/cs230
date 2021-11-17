@@ -15,11 +15,16 @@ class LinearNaive(NaiveBase):
         super().__init__(**kwargs)
 
         # add zero-mean normalization
-        self.normalize = F.normalize()
+        self.normalize = nn.BatchNorm1d(in_features)
 
         # set the linear classifier
-        self.classifier = nn.Linear(in_features, self.hparams.num_classes)
-
+        self.classifier = nn.Sequential(
+                nn.BatchNorm1d(in_features),
+                nn.Linear(in_features, 128),
+                nn.ReLU(),
+                nn.Linear(128, self.hparams.num_classes),
+                nn.Softmax()
+                )
         # set the loss criterion -- CE
         self.criterion = nn.CrossEntropyLoss()
 
@@ -28,10 +33,7 @@ class LinearNaive(NaiveBase):
         # Assuming `x` is the representation vector
 
         # Forward step
-        print(x.shape)
-        x = self.normalization(x)
         x = self.classifier(x)
-        x = F.Softmax(x, dim=1)
         return x
 
 
