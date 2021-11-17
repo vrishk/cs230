@@ -40,17 +40,21 @@ def get_weights():
     weights = weights / sum(weights)
     return weights
 
-def make_model(model_name: str, use_stored_features: bool):
+def make_model(model_name: str, use_stored_features: bool,
+               lr: float, num_classes: int, finetune: bool, norm: str):
 
     weights = get_weights()
     print("Weighted Crossentropy:", weights)
 
     return {
         'tripletnet': \
-            LinearNaive(256 * 3, lr=1e-3, num_classes=9, weights=weights) if use_stored_features
+            LinearNaive(256 * 3,
+                        lr=lr, num_classes=num_classes,
+                        weights=weights
+                        ) if use_stored_features
             else TripletNetNaive(finetune=False ,lr=1e-3, num_classes=9, weights=weights),
         'tripletnet_nonDLBCL': \
-            LinearNaive(256 * 3, lr=1e-3, num_classes=8, weights=weights) if use_stored_features
+            LinearNaive(256 * 3, lr=lr, num_classes=num_classes, weights=weights) if use_stored_features
             else TripletNetNaive(finetune=False, lr=1e-3, num_classes=8, weights=weights),
         'tripletnet_e2e': TripletNetNaive(finetune=True, lr=1e-3, num_classes=9, weights=weights),
         'resnet18': ResNetNaive(size=18, lr=1e-3, num_classes=9, finetune=True, weights=weights),
@@ -79,7 +83,8 @@ def make_dataloaders(num_workers: int, batch_size: int, use_stored_features: boo
 
 def train(cfg):
 
-    model = make_model(cfg.model_type, cfg.stored_features)
+    model = make_model(cfg.model_type, cfg.stored_features,
+                       cfg.lr, cfg.num_classes, cfg.finetune)
 
     dataloaders = make_dataloaders(
         num_workers=cfg.num_workers,
@@ -102,7 +107,7 @@ def train(cfg):
     trainer.save_checkpoint(f"../../models/{cfg.ckpt_name}.ckpt")
 
 
-@hydra.main(config_path="configs", config_name="config")
+@hydra.main(config_path="configs", config_name='config')
 def main(cfg: DictConfig) -> None:
     train(cfg)
 
