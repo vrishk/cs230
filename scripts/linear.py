@@ -11,16 +11,14 @@ from mil_base import MILBase
 
 
 class LinearNaive(NaiveBase):
-    def __init__(self, in_features: int, *args, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, in_features: int, optimizer, *args, **kwargs):
+        super().__init__(optimizer=optimizer, **kwargs)
 
-        # add zero-mean normalization
-        self.normalize = nn.BatchNorm1d(in_features)
-
+        print(f'optimizer: {self.optimizer}')
         # set the linear classifier
         self.classifier = nn.Sequential(
-                nn.BatchNorm1d(in_features),
                 nn.Linear(in_features, 128),
+                nn.BatchNorm1d(128),
                 nn.ReLU(),
                 nn.Linear(128, self.hparams.num_classes),
                 nn.Softmax()
@@ -31,7 +29,7 @@ class LinearNaive(NaiveBase):
     def forward(self, x):
 
         # Assuming `x` is the representation vector
-
+        print(f'shape of batch samples: {x.shape}')
         # Forward step
         x = self.classifier(x)
         return x

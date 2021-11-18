@@ -1,7 +1,7 @@
 batch_size: 128
 epochs: 3000
-num_workers: 12
-model_type: 'tripletnet_nonDLBCL'
+num_workers: 4
+model_type: 'tripletnet_nonDLBCL_norm'
 ckpt_name: 'tripletnet_linear'
 stored_features: True
 lr: 1e-2

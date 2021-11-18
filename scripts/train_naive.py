@@ -44,20 +44,24 @@ def get_weights():
     return weights
 
 def make_model(model_name: str, use_stored_features: bool,
-        lr: float, num_classes: int, finetune: bool):
+        lr: float, num_classes: int, finetune: bool,
+        optimizer: str):
 
     weights = get_weights()
     print("Weighted Crossentropy:", weights)
 
-    return {
-        'tripletnet': \
+    return {'tripletnet_nonDLBCL_norm':\
+            LinearNaive(256*3, lr=lr, num_classes=num_classes, weights=weights, optimizer=optimizer) if use_stored_features
+            else print('not implemented'),
+            'tripletnet': \
             LinearNaive(256 * 3,
                         lr=lr, num_classes=num_classes,
-                        weights=weights
+                        weights=weights,
+                        optimizer=optimizer
                         ) if use_stored_features
             else TripletNetNaive(finetune=False ,lr=1e-3, num_classes=9, weights=weights),
         'tripletnet_nonDLBCL': \
-            LinearNaive(256 * 3, lr=lr, num_classes=num_classes, weights=weights) if use_stored_features
+            LinearNaive(256 * 3, lr=lr, num_classes=num_classes, weights=weights, optimizer=optimizer) if use_stored_features
             else TripletNetNaive(finetune=False, lr=1e-3, num_classes=8, weights=weights),
         'tripletnet_e2e': TripletNetNaive(finetune=True, lr=1e-3, num_classes=9, weights=weights),
         'resnet18': ResNetNaive(size=18, lr=1e-3, num_classes=9, finetune=True, weights=weights),
@@ -87,7 +91,8 @@ def make_dataloaders(num_workers: int, batch_size: int, use_stored_features: boo
 def train(cfg):
 
     model = make_model(cfg.model_type, cfg.stored_features,
-                       cfg.lr, cfg.num_classes, cfg.finetune)
+                       cfg.lr, cfg.num_classes, cfg.finetune,
+                       cfg.optimizer)
 
     dataloaders = make_dataloaders(
         num_workers=cfg.num_workers,

@@ -14,13 +14,12 @@ import seaborn as sns
 
 class NaiveBase(pl.LightningModule):
     ## TODO: CHANGED DEFAULT TO 8, CHANGE BACK!
-    def __init__(self, lr: float = 1e-4, num_classes: int = 8, weights: torch.Tensor = None,
-                 norm= 'zero'):
+    def __init__(self, lr: float = 1e-4, num_classes: int = 8, weights: torch.Tensor = None, optimizer='Adam'):
         super().__init__()
 
         self.num_classes = num_classes
 
-        self.norm = norm
+        self.optimizer = optimizer
 
         # Ensure variables are accessible via `hparams` attribute
 
@@ -53,13 +52,18 @@ class NaiveBase(pl.LightningModule):
         # only train parameters that are not frozen
         parameters = self.parameters()
         trainable_parameters = list(filter(lambda p: p.requires_grad, parameters))
-
-        optimizer = torch.optim.Adam(trainable_parameters, lr=self.hparams.lr)
+        
+        if self.optimizer == 'Adam':
+            optimizer = torch.optim.Adam(trainable_parameters, lr=self.hparams.lr)
+        else:
+            optimizer = torch.optim.SGD(trainable_parameters, lr=self.hparams.lr, momentum=0.9)
         return optimizer
 
     def training_step(self, batch, batch_idx):
         # TODO: batch_idx unused?
         x, y = batch
+        print(f'training shape: {x.shape}, {y.shape}')
+        print(f'labels: {y}')
         # TODO: check dimension here
         y_hat = self(x)
         loss = self.criterion(y_hat, y)
@@ -74,6 +78,7 @@ class NaiveBase(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         # TODO: batch_idx unused?
         x, y = batch
+        print(f'shape of x, y: {x.shape}, {y.shape}')
         # TODO: check dimension here
         y_hat = self(x)
         loss = self.criterion(y_hat, y)
