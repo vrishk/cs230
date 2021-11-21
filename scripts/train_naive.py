@@ -63,11 +63,7 @@ def make_model(model_name: str, use_stored_features: bool,
         'tripletnet_nonDLBCL': \
             LinearNaive(256 * 3, lr=lr, num_classes=num_classes, weights=weights, optimizer=optimizer) if use_stored_features
             else TripletNetNaive(finetune=False, lr=1e-3, num_classes=8, weights=weights),
-        'tripletnet_e2e': TripletNetNaive(finetune=True, lr=1e-3, num_classes=9, weights=weights),
-        'resnet18': ResNetNaive(size=18, lr=1e-3, num_classes=9, finetune=True, weights=weights),
-        'resnet18_e2e': ResNetNaive(size=18, lr=1e-3, num_classes=9, finetune=False, weights=weights),
-        'resnet50': ResNetNaive(size=50, lr=1e-3, num_classes=9, finetune=True, weights=weights),
-        'resnet50_e2e': ResNetNaive(size=18, lr=1e-3, num_classes=9, finetune=False, weights=weights),
+        'tripletnet_e2e': TripletNetNaive(finetune=False, lr=lr, num_classes=num_classes, weights=weights, optimizer=optimizer)
     }[model_name]
 
 
@@ -87,6 +83,7 @@ def make_dataloaders(num_workers: int, batch_size: int, use_stored_features: boo
     }
 
     return dataloaders
+
 
 def train(cfg):
 

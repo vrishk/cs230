@@ -14,7 +14,7 @@ import seaborn as sns
 
 class NaiveBase(pl.LightningModule):
     ## TODO: CHANGED DEFAULT TO 8, CHANGE BACK!
-    def __init__(self, lr: float = 1e-4, num_classes: int = 8, weights: torch.Tensor = None, optimizer='Adam'):
+    def __init__(self, num_classes: int = 8, weights: torch.Tensor = None, optimizer='Adam'):
         super().__init__()
 
         self.num_classes = num_classes
