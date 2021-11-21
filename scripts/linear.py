@@ -17,11 +17,7 @@ class LinearNaive(NaiveBase):
         print(f'optimizer: {self.optimizer}')
         # set the linear classifier
         self.classifier = nn.Sequential(
-                nn.Linear(in_features, 128),
-                nn.BatchNorm1d(128),
-                nn.ReLU(),
-                nn.Linear(128, self.hparams.num_classes),
-                nn.Softmax()
+                nn.Linear(in_features, self.hparams.num_classes)
                 )
         # set the loss criterion -- CE
         self.criterion = nn.CrossEntropyLoss()
@@ -54,6 +50,7 @@ class LinearMIL(MILBase):
 
     def aggregate(self, y_hats):
         return torch.max(y_hats, dim=0)[0].unsqueeze(0)
+
 
 if __name__ == "__main__":
     # model_naive = LinearNaive(256 * 3, lr=1e-5, num_classes=9, fine_tune=False)
