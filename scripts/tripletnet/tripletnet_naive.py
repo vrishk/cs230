@@ -22,8 +22,8 @@ PATH_TO_PRETRAINED = '/deep/group/aihc-bootcamp-fall2021/lymphoma/models/Camelyo
 
 
 class TripletNetNaive(NaiveBase):
-    def __init__(self, finetune: bool = False, *args, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, finetune: bool = False, lr=1e-3, *args, **kwargs):
+        super().__init__(lr=lr, **kwargs)
 
         self.finetune = finetune
 

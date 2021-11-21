@@ -14,12 +14,14 @@ import seaborn as sns
 
 class NaiveBase(pl.LightningModule):
     ## TODO: CHANGED DEFAULT TO 8, CHANGE BACK!
-    def __init__(self, num_classes: int = 8, weights: torch.Tensor = None, optimizer='Adam'):
+    def __init__(self, num_classes: int = 9, weights: torch.Tensor = None, optimizer='Adam', lr=1e-3):
         super().__init__()
 
         self.num_classes = num_classes
 
         self.optimizer = optimizer
+
+        self.lr = lr
 
         # Ensure variables are accessible via `hparams` attribute
 
@@ -54,9 +56,10 @@ class NaiveBase(pl.LightningModule):
         trainable_parameters = list(filter(lambda p: p.requires_grad, parameters))
 
         if self.optimizer == 'Adam':
-            optimizer = torch.optim.Adam(trainable_parameters, lr=self.hparams.lr)
+            optimizer = torch.optim.Adam(trainable_parameters, lr=self.lr)
+            print(f'learning rate is: {self.hparams.lr}')
         else:
-            optimizer = torch.optim.SGD(trainable_parameters, lr=self.hparams.lr, momentum=0.9)
+            optimizer = torch.optim.SGD(trainable_parameters, lr=self.lr, momentum=0.9)
         return optimizer
 
     def training_step(self, batch, batch_idx):
