@@ -1,9 +1,10 @@
 batch_size: 128
-epochs: 3000
+epochs: 1000
 num_workers: 4
 model_type: 'tripletnet_nonDLBCL_norm'
 ckpt_name: 'tripletnet_linear'
 stored_features: True
 lr: 1e-2
-num_classes: 8
+num_classes: 9
 finetune: False
+aug_data: True

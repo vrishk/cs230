@@ -32,6 +32,7 @@ pl.seed_everything(42)
 
 RAW = lambda group: f"/deep/group/aihc-bootcamp-fall2021/lymphoma/processed/data_splits/{group}.hdf5"
 MODEL = lambda model, group: f"/deep/group/aihc-bootcamp-fall2021/lymphoma/processed/data_splits/custom_splits/{model}_features/{model}_{group}_features.hdf5"
+AUG =  lambda group: f"/deep/group/aihc-bootcamp-fall2021/lymphoma/processed/data_splits/augmented/{group}.hdf5"
 
 # CORE_PROPORTIONS = [0.4719, 0.1770, 0.0148, 0.0771, 0.0948, 0.0277, 0.0807, 0.0508, 0.0051]
 CORE_PROPORTIONS = [0.1770, 0.0148, 0.0771, 0.0948, 0.0277, 0.0807, 0.0508, 0.0051]
@@ -67,12 +68,15 @@ def make_model(model_name: str, use_stored_features: bool,
     }[model_name]
 
 
-def make_dataloaders(num_workers: int, batch_size: int, use_stored_features: bool = False, model: str = None):
+def make_dataloaders(num_workers: int, batch_size: int, use_stored_features: bool = False, aug_data: bool = True, model: str = None):
 
     # If finetuning
     if use_stored_features:
         paths = {'train': MODEL(model, 'train'), 'val': MODEL(model, 'val'), 'test': MODEL(model, 'test')}
         datasets = {i: NaiveDataset(hdf5_path=paths[i], is_features=True) for i in paths}
+    elif aug_data:
+        paths = {'train': AUG('train'), 'val': AUG('val'), 'test': AUG('test')}
+        datasets = {i: NaiveDataset(hdf5_path=paths[i], is_features=False) for i in paths}
     else:
         paths = {'train': RAW('train'), 'val': RAW('val'), 'test': RAW('test')}
         datasets = {i: NaiveDataset(hdf5_path=paths[i], is_features=False) for i in paths}
@@ -96,6 +100,7 @@ def train(cfg):
         num_workers=cfg.num_workers,
         batch_size=cfg.batch_size,
         use_stored_features=cfg.stored_features,
+        aug_data=cfg.aug_data,
         model=cfg.model_type
     )
 

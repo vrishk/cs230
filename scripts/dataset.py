@@ -106,7 +106,53 @@ class MILDataset(Dataset):
 #         return patch, torch.tensor(int(label))
 #
 
+
+
+# # This is the formal Dataset class!!!
+# class NaiveDataset(Dataset):
+#     def __init__(self, hdf5_path: str, is_features: bool = False, transform=transforms.ToTensor()):
 #
+#         self.hdf5_path = hdf5_path
+#         # Workaround for HDF5 not pickleable: https://discuss.pytorch.org/t/dataloader-when-num-worker-0-there-is-bug/25643/16
+#         self.h5data = None
+#
+#         h5data = h5py.File(self.hdf5_path, "r")
+#         self.cores = list(h5data.keys())
+#
+#         self.lengths = [len(h5data[i]) for i in self.cores]
+#         self.is_features = is_features
+#         self.transform = transform
+#
+#     def __len__(self):
+#         return sum(self.lengths)
+#
+#     def __getitem__(self, idx):
+#
+#         # Workaround for HDF5 not pickleable: https://discuss.pytorch.org/t/dataloader-when-num-worker-0-there-is-bug/25643/16
+#         if self.h5data is None:
+#             self.h5data = h5py.File(self.hdf5_path, "r")
+#
+#         core_idx = 0
+#         for l in self.lengths:
+#             if idx - self.lengths[core_idx] < 0:
+#                 break
+#             idx -= self.lengths[core_idx]
+#             core_idx += 1
+#
+#         core_id = self.cores[core_idx]
+#         patch: np.ndarray = self.h5data[core_id][()][idx]
+#         if self.is_features:
+#             label = self.h5data[core_id].attrs["y"]
+#             patch = torch.tensor(patch)
+#         else:
+#             label = self.h5data[core_id].attrs["label"]
+#             if self.transform:
+#                 patch = self.transform(patch)
+#
+#
+#         return patch, torch.tensor(int(label))
+
+# Temporary class to use for cutting down number of images
 class NaiveDataset(Dataset):
     def __init__(self, hdf5_path: str, is_features: bool = False, transform=transforms.ToTensor()):
 
@@ -122,7 +168,7 @@ class NaiveDataset(Dataset):
         self.transform = transform
 
     def __len__(self):
-        return sum(self.lengths)
+        return sum(self.lengths)//2
 
     def __getitem__(self, idx):
 
@@ -130,15 +176,16 @@ class NaiveDataset(Dataset):
         if self.h5data is None:
             self.h5data = h5py.File(self.hdf5_path, "r")
 
+        temp_idx = 2*idx
         core_idx = 0
         for l in self.lengths:
-            if idx - self.lengths[core_idx] < 0:
+            if temp_idx - self.lengths[core_idx] < 0:
                 break
-            idx -= self.lengths[core_idx]
+            temp_idx -= self.lengths[core_idx]
             core_idx += 1
 
         core_id = self.cores[core_idx]
-        patch: np.ndarray = self.h5data[core_id][()][idx]
+        patch: np.ndarray = self.h5data[core_id][()][temp_idx]
         if self.is_features:
             label = self.h5data[core_id].attrs["y"]
             patch = torch.tensor(patch)
