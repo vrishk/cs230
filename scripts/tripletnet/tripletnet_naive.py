@@ -59,7 +59,7 @@ class TripletNetNaive(NaiveBase):
 
     def normalize(self, x):
         print(f"input shape for norm: {x.shape}, expect [N, 3, 224, 224]")
-        image = x.numpy()
+        image = x.cpu().numpy()
         print("Shape before normalization:", x.shape)
 
         # shape (3,)
@@ -76,7 +76,7 @@ class TripletNetNaive(NaiveBase):
         image[:, 1, :, :] = image[:, 1, :, :] / batch_std0[1]
         image[:, 2, :, :] = image[:, 2, :, :] / batch_std0[2]
 
-        x = torch.toTensor(image)
+        x = torch.from_numpy(image)
         print("Shape after normalization:", x.shape)
 
         return x
@@ -84,14 +84,13 @@ class TripletNetNaive(NaiveBase):
 
     def forward(self, x):
         # normalize within batch
-        x = self.normalize(x)
+        x = self.normalize(x).type('torch.cuda.HalfTensor')
 
         # Forward step
         x = self.feature_extractor(x)              # representations
         print(f"shape of output from extractor: {x.shape}")
-        x = x.flatten(x)
-        print(f"shape after flattened: {x.shape}")
         x = self.classifier(x)                     # classifications
+        print(f'shape of output after classifier: {x.shape}')
         return x
 
 

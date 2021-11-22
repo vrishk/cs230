@@ -50,7 +50,7 @@ def make_model(model_name: str, use_stored_features: bool,
 
     weights = get_weights()
     print("Weighted Crossentropy:", weights)
-
+    print(f"model name: {model_name}")
     return {'tripletnet_nonDLBCL_norm':\
             LinearNaive(256*3, lr=lr, num_classes=num_classes, weights=weights, optimizer=optimizer) if use_stored_features
             else print('not implemented'),
