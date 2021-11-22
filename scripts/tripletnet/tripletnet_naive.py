@@ -57,35 +57,7 @@ class TripletNetNaive(NaiveBase):
         self.criterion = nn.CrossEntropyLoss()
 
 
-    def normalize(self, x):
-        print(f"input shape for norm: {x.shape}, expect [N, 3, 224, 224]")
-        image = x.cpu().numpy()
-        print("Shape before normalization:", x.shape)
-
-        # shape (3,)
-        batch_mean = np.mean(image, axis=(0, 2, 3))
-        batch_std0 = np.std(image, axis=(0, 2, 3))
-        # batch_std1 = np.std(image, axis=(0, 2, 3), ddof=1)
-
-        # normalize within the batch
-        image[:, 0, :, :] = image[:, 0, :, :] - batch_mean[0]
-        image[:, 1, :, :] = image[:, 1, :, :] - batch_mean[1]
-        image[:, 2, :, :] = image[:, 2, :, :] - batch_mean[2]
-
-        image[:, 0, :, :] = image[:, 0, :, :] / batch_std0[0]
-        image[:, 1, :, :] = image[:, 1, :, :] / batch_std0[1]
-        image[:, 2, :, :] = image[:, 2, :, :] / batch_std0[2]
-
-        x = torch.from_numpy(image)
-        print("Shape after normalization:", x.shape)
-
-        return x
-
-
     def forward(self, x):
-        # normalize within batch
-        x = self.normalize(x).type('torch.cuda.HalfTensor')
-
         # Forward step
         x = self.feature_extractor(x)              # representations
         print(f"shape of output from extractor: {x.shape}")

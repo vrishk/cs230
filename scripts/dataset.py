@@ -108,7 +108,7 @@ class MILDataset(Dataset):
 
 
 
-# # This is the formal Dataset class!!!
+# # This is the formal Dataset class!!! (without normalization yet)
 # class NaiveDataset(Dataset):
 #     def __init__(self, hdf5_path: str, is_features: bool = False, transform=transforms.ToTensor()):
 #
@@ -152,7 +152,9 @@ class MILDataset(Dataset):
 #
 #         return patch, torch.tensor(int(label))
 
-# Temporary class to use for cutting down number of images
+
+
+# Temporary class to use for cutting down number of images with normalization
 class NaiveDataset(Dataset):
     def __init__(self, hdf5_path: str, is_features: bool = False, transform=transforms.ToTensor()):
 
@@ -165,6 +167,12 @@ class NaiveDataset(Dataset):
 
         self.lengths = [len(h5data[i]) for i in self.cores]
         self.is_features = is_features
+
+        transform = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize((0.00247837, 0.00186819, 0.00263161),
+                                 (0.0101850529, 0.0099803880, 0.00758414449))])
+
         self.transform = transform
 
     def __len__(self):
@@ -193,6 +201,5 @@ class NaiveDataset(Dataset):
             label = self.h5data[core_id].attrs["label"]
             if self.transform:
                 patch = self.transform(patch)
-
 
         return patch, torch.tensor(int(label))
