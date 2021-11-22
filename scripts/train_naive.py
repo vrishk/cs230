@@ -44,8 +44,10 @@ def get_weights():
     weights = weights / sum(weights)
     return weights
 
-def make_model(model_name: str, use_stored_features: bool,
-        lr: float, num_classes: int, finetune: bool,
+def make_model(
+        model_name: str, use_stored_features: bool,
+        lr: float, num_classes: int,
+        finetune: bool, layers_tune: int,
         optimizer: str):
 
     weights = get_weights()
@@ -64,7 +66,7 @@ def make_model(model_name: str, use_stored_features: bool,
         'tripletnet_nonDLBCL': \
             LinearNaive(256 * 3, lr=lr, num_classes=num_classes, weights=weights, optimizer=optimizer) if use_stored_features
             else TripletNetNaive(finetune=finetune, lr=1e-3, num_classes=9, weights=weights),
-        'tripletnet_e2e': TripletNetNaive(finetune=finetune, lr=lr, num_classes=num_classes, weights=weights, optimizer=optimizer)
+        'tripletnet_e2e': TripletNetNaive(finetune=finetune, layers_tune=layers_tune, lr=lr, num_classes=num_classes, weights=weights, optimizer=optimizer)
     }[model_name]
 
 
@@ -93,7 +95,7 @@ def make_dataloaders(num_workers: int, batch_size: int, use_stored_features: boo
 def train(cfg):
 
     model = make_model(cfg.model_type, cfg.stored_features,
-                       cfg.lr, cfg.num_classes, cfg.finetune,
+                       cfg.lr, cfg.num_classes, cfg.finetune, cfg.layers_tune,
                        cfg.optimizer)
 
     dataloaders = make_dataloaders(

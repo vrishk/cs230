@@ -47,13 +47,14 @@ class TripletNetNaive(NaiveBase):
                 param = param[1]
                 param.requires_grad = False
                 largest = int(name)
-        
-        if layers_tune is not None:
-            for name, param in enumerate(model.named_parameters()):
-                if int(name) >= largest - layers_tune:
-                    param[1].requires_grad = True
-                    print(param[0])
-                    print(param[1].shape)
+
+            if layers_tune is not None:
+                print(f"Finetuning {layers_tune} layers!")
+                for name, param in enumerate(model.named_parameters()):
+                    if int(name) >= largest - layers_tune:
+                        param[1].requires_grad = True
+                        print(param[0])
+                        print(param[1].shape)
 
         # set the pretrained weights as the network
         self.feature_extractor = model
