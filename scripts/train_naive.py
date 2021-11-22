@@ -7,10 +7,6 @@ import torch
 from torch.utils.data import DataLoader
 import pytorch_lightning as pl
 
-import numpy as np
-
-import argparse as ap
-
 # Local imports
 
 import os
@@ -21,7 +17,6 @@ sys.path.append(os.path.join(os.getcwd(), "./resnet"))
 
 from dataset import NaiveDataset
 from linear import LinearNaive
-from resnet.resnet_naive import ResNetNaive
 from tripletnet.tripletnet_naive import TripletNetNaive
 
 # Lightning seed
@@ -35,7 +30,7 @@ MODEL = lambda model, group: f"/deep/group/aihc-bootcamp-fall2021/lymphoma/proce
 AUG =  lambda group: f"/deep/group/aihc-bootcamp-fall2021/lymphoma/processed/data_splits/augmented/{group}.hdf5"
 
 CORE_PROPORTIONS = [0.4719, 0.1770, 0.0148, 0.0771, 0.0948, 0.0277, 0.0807, 0.0508, 0.0051]
-# CORE_PROPORTIONS = [0.1770, 0.0148, 0.0771, 0.0948, 0.0277, 0.0807, 0.0508, 0.0051]
+
 
 # Helper Functions
 
@@ -53,20 +48,18 @@ def make_model(
     weights = get_weights()
     print("Weighted Crossentropy:", weights)
     print(f"model name: {model_name}")
-    return {'tripletnet_nonDLBCL_norm':\
-            LinearNaive(256*3, lr=lr, num_classes=num_classes, weights=weights, optimizer=optimizer) if use_stored_features
-            else print('not implemented'),
-            'tripletnet': \
-            LinearNaive(256 * 3,
-                        lr=lr, num_classes=num_classes,
-                        weights=weights,
-                        optimizer=optimizer
-                        ) if use_stored_features
-            else TripletNetNaive(finetune=finetune ,lr=1e-3, num_classes=9, weights=weights),
-        'tripletnet_nonDLBCL': \
-            LinearNaive(256 * 3, lr=lr, num_classes=num_classes, weights=weights, optimizer=optimizer) if use_stored_features
-            else TripletNetNaive(finetune=finetune, lr=1e-3, num_classes=9, weights=weights),
-        'tripletnet_e2e': TripletNetNaive(finetune=finetune, layers_tune=layers_tune, lr=lr, num_classes=num_classes, weights=weights, optimizer=optimizer)
+    return {'tripletnet': LinearNaive(
+        256 * 3, lr=lr, num_classes=num_classes,
+        weights=weights, optimizer=optimizer) if use_stored_features
+    else TripletNetNaive(
+        finetune=finetune,
+        lr=lr, num_classes=num_classes, weights=weights
+    ),
+        'tripletnet_e2e': TripletNetNaive(
+            finetune=finetune, layers_tune=layers_tune,
+            lr=lr, num_classes=num_classes,
+            weights=weights, optimizer=optimizer
+        )
     }[model_name]
 
 
@@ -91,9 +84,7 @@ def make_dataloaders(num_workers: int, batch_size: int, use_stored_features: boo
     return dataloaders
 
 
-
 def train(cfg):
-
     model = make_model(cfg.model_type, cfg.stored_features,
                        cfg.lr, cfg.num_classes, cfg.finetune, cfg.layers_tune,
                        cfg.optimizer)

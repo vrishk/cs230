@@ -13,7 +13,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 class NaiveBase(pl.LightningModule):
-    ## TODO: CHANGED DEFAULT TO 8, CHANGE BACK!
     def __init__(self, num_classes: int = 9, weights: torch.Tensor = None, optimizer='Adam', lr=1e-3):
         super().__init__()
 
@@ -24,7 +23,6 @@ class NaiveBase(pl.LightningModule):
         self.lr = lr
 
         # Ensure variables are accessible via `hparams` attribute
-
         self.save_hyperparameters()
 
         # Weighted crossentropy for dataset skew
@@ -45,7 +43,6 @@ class NaiveBase(pl.LightningModule):
         self.val_cm = cm.clone()
         self.test_cm = cm.clone()
 
-
     def forward(self, x):
         # Forward step
         raise NotImplementedError("forward must be implemented for inheriting VanillaNet")
@@ -57,7 +54,7 @@ class NaiveBase(pl.LightningModule):
 
         if self.optimizer == 'Adam':
             optimizer = torch.optim.Adam(trainable_parameters, lr=self.lr)
-            print(f'learning rate is: {self.hparams.lr}')
+            print(f'learning rate is: {self.lr}')
         else:
             optimizer = torch.optim.SGD(trainable_parameters, lr=self.lr, momentum=0.9)
         return optimizer
@@ -90,9 +87,7 @@ class NaiveBase(pl.LightningModule):
         return {"loss": loss, "preds": y_hat.detach(), "targets": y.detach()}
 
     def test_step(self, batch, batch_idx):
-        # TODO: batch_idx unused?
         x, y = batch
-        # TODO: check dimension here
         y_hat = self(x)
         loss = self.criterion(y_hat, y)
         acc = self.test_acc(y_hat, y)
@@ -109,8 +104,8 @@ class NaiveBase(pl.LightningModule):
         preds = torch.cat([tmp['preds'] for tmp in outputs])
         confusion_matrix = self.train_cm(preds, targets)
 
-        df_cm = pd.DataFrame(confusion_matrix.cpu().numpy(), index = range(self.num_classes), columns=range(self.num_classes))
-        plt.figure(figsize = (10,7))
+        df_cm = pd.DataFrame(confusion_matrix.cpu().numpy(), index=range(self.num_classes), columns=range(self.num_classes))
+        plt.figure(figsize=(10, 7))
         fig_ = sns.heatmap(df_cm, annot=True, cmap='Spectral').get_figure()
         plt.close(fig_)
 
@@ -128,8 +123,8 @@ class NaiveBase(pl.LightningModule):
         preds = torch.cat([tmp['preds'] for tmp in outputs])
         confusion_matrix = self.val_cm(preds, targets)
 
-        df_cm = pd.DataFrame(confusion_matrix.cpu().numpy(), index = range(self.num_classes), columns=range(self.num_classes))
-        plt.figure(figsize = (10,7))
+        df_cm = pd.DataFrame(confusion_matrix.cpu().numpy(), index=range(self.num_classes), columns=range(self.num_classes))
+        plt.figure(figsize=(10, 7))
         fig_ = sns.heatmap(df_cm, annot=True, cmap='Spectral').get_figure()
         plt.close(fig_)
         self.logger.experiment.add_figure("val_cm", fig_, self.current_epoch)
@@ -146,8 +141,8 @@ class NaiveBase(pl.LightningModule):
         preds = torch.cat([tmp['preds'] for tmp in outputs])
         confusion_matrix = self.val_cm(preds, targets)
 
-        df_cm = pd.DataFrame(confusion_matrix.cpu().numpy(), index = range(self.num_classes), columns=range(self.num_classes))
-        plt.figure(figsize = (10,7))
+        df_cm = pd.DataFrame(confusion_matrix.cpu().numpy(), index=range(self.num_classes), columns=range(self.num_classes))
+        plt.figure(figsize=(10, 7))
         fig_ = sns.heatmap(df_cm, annot=True, cmap='Spectral').get_figure()
         plt.close(fig_)
         self.logger.experiment.add_figure("test_cm", fig_, self.current_epoch)

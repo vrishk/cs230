@@ -20,6 +20,7 @@ sys.path.append(os.getcwd()) # noqa
 # Path to pre-trained TripleNet model
 PATH_TO_PRETRAINED = '/deep/group/aihc-bootcamp-fall2021/lymphoma/models/Camelyon16_pretrained_model.pt'
 
+
 class TripletNetNaive(NaiveBase):
     def __init__(self, finetune: bool = False, layers_tune: int = 9, lr=1e-3, *args, **kwargs):
         super().__init__(lr=lr, **kwargs)
@@ -27,7 +28,7 @@ class TripletNetNaive(NaiveBase):
         self.finetune = finetune
         print(f'finetune value:{self.finetune}')
         # Load pre-trained network:
-        state_dict = torch.load(PATH_TO_PRETRAINED) ## TODO: change this to pytorch lightning
+        state_dict = torch.load(PATH_TO_PRETRAINED)
 
         # create new OrderedDict that does not contain `module`
         new_state_dict = OrderedDict()
@@ -48,6 +49,7 @@ class TripletNetNaive(NaiveBase):
                 param.requires_grad = False
                 largest = int(name)
 
+            # Set up how many layers to finetune
             if layers_tune is not None:
                 print(f"Finetuning {layers_tune} layers!")
                 for name, param in enumerate(model.named_parameters()):
@@ -66,14 +68,26 @@ class TripletNetNaive(NaiveBase):
         # set the loss criterion -- CE
         self.criterion = nn.CrossEntropyLoss()
 
-
     def forward(self, x):
         # Forward step
         x = self.feature_extractor(x)              # representations
-        print(f"shape of output from extractor: {x.shape}")
         x = self.classifier(x)                     # classifications
-        print(f'shape of output after classifier: {x.shape}')
         return x
+
+
+if __name__ == "__main__":
+    model = TripletNetNaive(lr=1e-5, num_classes=9, finetune=False)
+    print(model)
+
+
+
+
+
+
+
+
+
+
 
 
 # class TripletNetNaive(NaiveBase):
@@ -119,9 +133,4 @@ class TripletNetNaive(NaiveBase):
 #         x = self.classifier(x)                     # classifications
 #         print(f'shape of output after classifier: {x.shape}')
 #         return x
-
-
-if __name__ == "__main__":
-    model = TripletNetNaive(lr=1e-5, num_classes=9, finetune=False)
-    print(model)
 
