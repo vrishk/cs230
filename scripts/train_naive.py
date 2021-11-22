@@ -34,8 +34,8 @@ RAW = lambda group: f"/deep/group/aihc-bootcamp-fall2021/lymphoma/processed/data
 MODEL = lambda model, group: f"/deep/group/aihc-bootcamp-fall2021/lymphoma/processed/data_splits/custom_splits/{model}_features/{model}_{group}_features.hdf5"
 AUG =  lambda group: f"/deep/group/aihc-bootcamp-fall2021/lymphoma/processed/data_splits/augmented/{group}.hdf5"
 
-# CORE_PROPORTIONS = [0.4719, 0.1770, 0.0148, 0.0771, 0.0948, 0.0277, 0.0807, 0.0508, 0.0051]
-CORE_PROPORTIONS = [0.1770, 0.0148, 0.0771, 0.0948, 0.0277, 0.0807, 0.0508, 0.0051]
+CORE_PROPORTIONS = [0.4719, 0.1770, 0.0148, 0.0771, 0.0948, 0.0277, 0.0807, 0.0508, 0.0051]
+# CORE_PROPORTIONS = [0.1770, 0.0148, 0.0771, 0.0948, 0.0277, 0.0807, 0.0508, 0.0051]
 
 # Helper Functions
 
@@ -60,11 +60,11 @@ def make_model(model_name: str, use_stored_features: bool,
                         weights=weights,
                         optimizer=optimizer
                         ) if use_stored_features
-            else TripletNetNaive(finetune=False ,lr=1e-3, num_classes=9, weights=weights),
+            else TripletNetNaive(finetune=finetune ,lr=1e-3, num_classes=9, weights=weights),
         'tripletnet_nonDLBCL': \
             LinearNaive(256 * 3, lr=lr, num_classes=num_classes, weights=weights, optimizer=optimizer) if use_stored_features
-            else TripletNetNaive(finetune=False, lr=1e-3, num_classes=8, weights=weights),
-        'tripletnet_e2e': TripletNetNaive(finetune=False, lr=lr, num_classes=num_classes, weights=weights, optimizer=optimizer)
+            else TripletNetNaive(finetune=finetune, lr=1e-3, num_classes=9, weights=weights),
+        'tripletnet_e2e': TripletNetNaive(finetune=finetune, lr=lr, num_classes=num_classes, weights=weights, optimizer=optimizer)
     }[model_name]
 
 
@@ -82,7 +82,7 @@ def make_dataloaders(num_workers: int, batch_size: int, use_stored_features: boo
         datasets = {i: NaiveDataset(hdf5_path=paths[i], is_features=False) for i in paths}
 
     dataloaders = {
-        i: DataLoader(datasets[i], batch_size=batch_size, num_workers=num_workers, shuffle=True)
+        i: DataLoader(datasets[i], batch_size=batch_size, pin_memory=True,  num_workers=num_workers, shuffle=True)
         for i in datasets
     }
 
