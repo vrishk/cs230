@@ -61,8 +61,6 @@ class NaiveBase(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         x, y = batch
-        print(f'training shape: {x.shape}, {y.shape}')
-        print(f'labels: {y}')
         y_hat = self(x)
         loss = self.criterion(y_hat, y)
         acc = self.train_acc(y_hat, y)
@@ -75,7 +73,6 @@ class NaiveBase(pl.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         x, y = batch
-        print(f'shape of x, y: {x.shape}, {y.shape}')
         y_hat = self(x)
         loss = self.criterion(y_hat, y)
         acc = self.val_acc(y_hat, y)

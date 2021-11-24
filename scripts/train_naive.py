@@ -46,8 +46,6 @@ def make_model(
         optimizer: str):
 
     weights = get_weights()
-    print("Weighted Crossentropy:", weights)
-    print(f"model name: {model_name}")
     return {'tripletnet': LinearNaive(
         256 * 3, lr=lr, num_classes=num_classes,
         weights=weights, optimizer=optimizer) if use_stored_features
