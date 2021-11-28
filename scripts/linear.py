@@ -25,7 +25,6 @@ class LinearNaive(NaiveBase):
     def forward(self, x):
 
         # Assuming `x` is the representation vector
-        print(f'shape of batch samples: {x.shape}')
         # Forward step
         x = self.classifier(x)
         return x

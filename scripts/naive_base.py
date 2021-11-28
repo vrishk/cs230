@@ -25,8 +25,19 @@ class NaiveBase(pl.LightningModule):
         # Ensure variables are accessible via `hparams` attribute
         self.save_hyperparameters()
 
-        # Weighted crossentropy for dataset skew
-        self.criterion = nn.CrossEntropyLoss(weight=weights)
+        # # Weighted crossentropy for dataset skew
+        # self.criterion = nn.CrossEntropyLoss(weight=weights)
+        # set the loss criterion -- Focal Loss 
+        # (https://github.com/AdeelH/pytorch-multi-class-focal-loss)
+        self.criterion = torch.hub.load(
+            'adeelh/pytorch-multi-class-focal-loss',
+            model='FocalLoss',
+            alpha=torch.tensor([0.05, 0.05, 0.125, 0.1, 0.1, 0.125, 0.1, 0.1, 0.25]),
+            gamma=2,
+            reduction='mean',
+            force_reload=False
+        )
+
 
         # Classification metrics
 
