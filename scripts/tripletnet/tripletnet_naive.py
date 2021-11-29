@@ -63,19 +63,19 @@ class TripletNetNaive(NaiveBase):
         # use the classifier setup in the paper
         self.classifier = nn.Linear(256*3, self.hparams.num_classes)
 
-        # set the loss criterion -- CE
-        # self.criterion = nn.CrossEntropyLoss()
+#         # set the loss criterion -- CE
+#         # self.criterion = nn.CrossEntropyLoss()
 
-        # set the loss criterion -- Focal Loss 
-        # (https://github.com/AdeelH/pytorch-multi-class-focal-loss)
-        self.criterion = torch.hub.load(
-            'adeelh/pytorch-multi-class-focal-loss',
-            model='FocalLoss',
-            alpha=torch.tensor([0.05, 0.05, 0.125, 0.1, 0.1, 0.125, 0.1, 0.1, 0.25]),
-            gamma=2,
-            reduction='mean',
-            force_reload=False
-        )
+#         # set the loss criterion -- Focal Loss 
+#         # (https://github.com/AdeelH/pytorch-multi-class-focal-loss)
+#         self.criterion = torch.hub.load(
+#             'adeelh/pytorch-multi-class-focal-loss',
+#             model='FocalLoss',
+#             alpha=torch.tensor([0.05, 0.05, 0.125, 0.1, 0.1, 0.125, 0.1, 0.1, 0.25]),
+#             gamma=2,
+#             reduction='mean',
+#             force_reload=False
+#         )
 
     def forward(self, x):
         # Forward step

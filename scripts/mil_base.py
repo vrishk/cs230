@@ -22,8 +22,19 @@ class MILBase(pl.LightningModule):
         # Ensure variables are accessible via `hparams` attribute
         self.save_hyperparameters()
 
-        # Weighted crossentropy for dataset skew
+        # # Weighted crossentropy for dataset skew
         self.criterion = nn.CrossEntropyLoss(weight=weights)
+        # set the loss criterion -- Focal Loss 
+        # (https://github.com/AdeelH/pytorch-multi-class-focal-loss)
+        # self.criterion = torch.hub.load(
+        #     'adeelh/pytorch-multi-class-focal-loss',
+        #     model='FocalLoss',
+        #     alpha=torch.tensor([0.05, 0.05, 0.125, 0.1, 0.1, 0.125, 0.1, 0.1, 0.25]),
+        #     gamma=2,
+        #     reduction='mean',
+        #     force_reload=False
+        # )
+
 
         # Classification metrics
 
@@ -114,12 +125,6 @@ class MILBase(pl.LightningModule):
 
     def validation_epoch_end(self, outputs):
 
-        try:
-            if outputs[0].size() == []:
-                return
-        except:
-            return
-
         targets = torch.cat([tmp['targets'] for tmp in outputs])
         preds = torch.cat([tmp['preds'] for tmp in outputs])
         confusion_matrix = self.val_cm(preds, targets)
@@ -132,15 +137,9 @@ class MILBase(pl.LightningModule):
 
     def test_epoch_end(self, outputs):
 
-        try:
-            if outputs[0].size() == []:
-                return
-        except:
-            return
-
         targets = torch.cat([tmp['targets'] for tmp in outputs])
         preds = torch.cat([tmp['preds'] for tmp in outputs])
-        confusion_matrix = self.val_cm(preds, targets)
+        confusion_matrix = self.test_cm(preds, targets)
 
         df_cm = pd.DataFrame(confusion_matrix.cpu().numpy(), index = range(self.num_classes), columns=range(self.num_classes))
         plt.figure(figsize = (10,7))

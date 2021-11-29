@@ -120,13 +120,6 @@ class NaiveBase(pl.LightningModule):
         self.logger.experiment.add_figure("train_cm", fig_, self.current_epoch)
 
     def validation_epoch_end(self, outputs):
-
-        try:
-            if outputs[0].size() == []:
-                return
-        except:
-            return
-
         targets = torch.cat([tmp['targets'] for tmp in outputs])
         preds = torch.cat([tmp['preds'] for tmp in outputs])
         confusion_matrix = self.val_cm(preds, targets)
@@ -139,15 +132,9 @@ class NaiveBase(pl.LightningModule):
 
     def test_epoch_end(self, outputs):
 
-        try:
-            if outputs[0].size() == []:
-                return
-        except:
-            return
-
         targets = torch.cat([tmp['targets'] for tmp in outputs])
         preds = torch.cat([tmp['preds'] for tmp in outputs])
-        confusion_matrix = self.val_cm(preds, targets)
+        confusion_matrix = self.test_cm(preds, targets)
 
         df_cm = pd.DataFrame(confusion_matrix.cpu().numpy(), index=range(self.num_classes), columns=range(self.num_classes))
         plt.figure(figsize=(10, 7))
