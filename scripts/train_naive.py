@@ -109,7 +109,7 @@ def train(cfg):
     trainer.save_checkpoint(f"../../models/{cfg.ckpt_name}.ckpt")
 
 
-@hydra.main(config_path="configs", config_name='naive')
+@hydra.main(config_path="configs", config_name='config')
 def main(cfg: DictConfig) -> None:
     train(cfg)
 

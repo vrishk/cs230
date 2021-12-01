@@ -201,6 +201,6 @@ class NaiveDataset(Dataset):
             label = self.h5data[core_id].attrs["label"]
             if self.transform:
                 patch = self.transform(patch)
-            patch = torch.tensor(patch)
+            # patch = torch.tensor(patch)
 
         return patch, torch.tensor(int(label))
